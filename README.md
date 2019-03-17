@@ -21,6 +21,10 @@ There are several ways this could be accomplished, but in this architecture I wi
 
 ![High level architecture diagram](images/HighLevelArchitecture.png)
 
+# Schema
+
+![Incentive schema](images/Schema.png)
+
 # Incentive events menu
 
 * Consistent logger - The user has logged data for at least 5 consecutive days.
@@ -34,4 +38,4 @@ In each case, one or more events will be mapped to an achievement, or eventually
 
 For the purposes of this architecture and the related code I will refer to the events that have a one-to-one relationship with an achievement as "Immediate" events. In this case the achievement must be recorded so the achievement is not awarded multiple times and the customer must be notified of the achievement. No records of the underlying event need to be remembered.
 
-Achievements that require a particular sequence of events to unlock will require some amount of storage of the events. This event memory can be purged regularly of events that fall outside of a timeline deemed interesting for the purposes of partner integrations. When an event comes in that may be part of the desired pattern, a quick evaluation can be made to determine if the achievement has been unlocked.
+Achievements that require a particular sequence of events to unlock will be referred to as "Progressive" events. These events will require some storage until the sequence of events either successfully results in an achievement or fails to do so. This event memory can be purged regularly of events that fall outside of a timeline deemed interesting for the purposes of partner integrations. When an event comes in that may be part of the desired pattern, a quick evaluation can be made to determine if the achievement has been unlocked.
