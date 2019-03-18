@@ -1,19 +1,20 @@
 # Ovia incentive system
 
-The Ovia incentive system is a proposal for a new feature that strives to achieve more complete partner integration, which will benefit Ovia, Ovia's partners, and Ovia's enterprise users.
+The Ovia incentive system is a proposal for a new feature that strives to achieve more complete employer integration.
 
 ## Goals of the integration
-* Strengthen the palette of mechanisms partners can use to target their products and services and help them set up meaningful interactions with Ovia users
-* Provide a platform for Ovia users with rich and relevant information, products, and services to make them feel secure they are not missing anything in terms of preparation or assistance during the pregnancy, birth, and early childhood
-* Build trust with partners that they are informed when achievement criteria are met, every single time
+* Strengthen the palette of mechanisms partners and employers can use to target their engagement incentives and help them set up meaningful interactions with their employees through Ovia.
+* Provide a platform for Ovia users with rich and relevant information, products, and services to make them feel secure they are not missing anything in terms of preparation or assistance during the pregnancy, birth, and early childhood.
+* Build trust with employers and partners that they are informed when achievement criteria are met, every single time.
 
 ## Assumptions about the current system
 * The system runs on AWS and is configured with high availability such that every part of the system has redundancy so that any failure of one of the services will not result in the entire system going down.
 * The front end of the system is a mobile application, making it convenient for the customer to keep their data current in the Ovia system at any time and any place.
 * Performance of the system is a primary consideration, so there is no impediment for the user to enter data at any time.
+* Employers and partners that are interested in being notified of particular achievements will have an application set up that the Incentive application will talk to. This system will use some sort of account ID and secret, which the Incentive application will need in order to perform the noticifacion.
 
 # Design considerations
-The data that drives this system is largely provided through mobile applications sent via REST API calls to the Ovia application. In order to keep the system responsive, it is important that the additional processing required to figure out whether a particular event triggers an achievement is performed outside of the web request.
+The data that drives this system is largely provided through mobile applications sent via REST API calls to the Ovia application. In order to keep the system responsive, it is important that the additional processing required to figure out whether a particular event triggers an achievement and the notification of partners and employers is performed outside of the web request.
 
 There are several ways this could be accomplished, but in this architecture I will pursue a separation of event processing from the existing backend system. This will allow the event processing system to be implemented by a separate team than the one responsible for the Ovia backend which may improve time to market. It would also allow the introduction of new technologies that may be more difficult or expensive to apply to the existing Ovia backend. Further, the event system can scale independently of the existing Ovia backend.
 
@@ -22,6 +23,7 @@ There are several ways this could be accomplished, but in this architecture I wi
 ![High level architecture diagram](images/HighLevelArchitecture.png)
 
 # Schema
+*Note:* While I understand the project is about employers engaging more completey with their employees, such incentive events would also likely be quite interesting for partners. The particulars of the design of this solution will take that into account, so in the database where "partner" is used, this could be for either a partner or for an employer.
 
 ![Incentive schema](images/Schema.png)
 
@@ -39,3 +41,19 @@ In each case, one or more events will be mapped to an achievement, or eventually
 For the purposes of this architecture and the related code I will refer to the events that have a one-to-one relationship with an achievement as "Immediate" events. In this case the achievement must be recorded so the achievement is not awarded multiple times and the customer must be notified of the achievement. No records of the underlying event need to be remembered.
 
 Achievements that require a particular sequence of events to unlock will be referred to as "Progressive" events. These events will require some storage until the sequence of events either successfully results in an achievement or fails to do so. This event memory can be purged regularly of events that fall outside of a timeline deemed interesting for the purposes of partner integrations. When an event comes in that may be part of the desired pattern, a quick evaluation can be made to determine if the achievement has been unlocked.
+
+# Missing from the implementation
+* The event receiever - this is the part of the system that receives a single event from SQS and uses the EventFactory to instantiate an Event instance of the appropriate class:
+> $result = $aws_client->receiveMessage($connection_details);
+> if ($result->get('Messages')) {
+>     foreach ($result->get('Messages') as $message) {
+>         try {
+>             $event = EventFactory::fromJSON($message['Body']);
+>             $event_processor->processEvent($event);
+>         } catch (\Exception $e) {
+>             // Send an error to SignalFX and log the issue.
+>         }
+>         $client->deleteMessage(['QueueUrl' => $connection_details->QueueUrl, 'ReceiptHandle' => $message['ReceiptHandle']]);
+>    }
+> }
+

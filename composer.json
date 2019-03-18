@@ -1,0 +1,16 @@
+{
+    "name": "paullovvik/ovia",
+    "description": "Ovia Health incentive event system",
+    "require-dev": {
+        "squizlabs/php_codesniffer": "3.3.2"
+    },
+    "authors": [
+        {
+            "name": "Paul Lovvik",
+            "email": "paul.lovvik@gmail.com"
+        }
+    ],
+    "require": {
+      "ext-json": "*"
+    }
+}
