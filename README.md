@@ -42,7 +42,7 @@ For the purposes of this architecture and the related code I will refer to the e
 
 Achievements that require a particular sequence of events to unlock will be referred to as "Progressive" events. These events will require some storage until the sequence of events either successfully results in an achievement or fails to do so. This event memory can be purged regularly of events that fall outside of a timeline deemed interesting for the purposes of partner integrations. When an event comes in that may be part of the desired pattern, a quick evaluation can be made to determine if the achievement has been unlocked.
 
-# Missing from the implementation
+# Missing from the implementation and shortcomings
 * I didn't implement any storage, though I did assume there would be a SQL database behind the application.
 * The event receiever - this is the part of the system that receives a single event from SQS and uses the EventFactory to instantiate an Event instance of the appropriate class:
 <pre>
@@ -62,8 +62,6 @@ $result = $aws_client->receiveMessage($connection_details);
 
 * The association between an event and the AchievementEvaluator instance that will indicate whether the event should cause the achievement to be awarded is also not in the implementation. I was a bit torn on this one - will it always be the case that a HealthLogEvent only drives toward a HealthAchievement? Probably not in the long term. The solution here could simply be to try all of the AchievementEvaluators to see if the specified Event should cause an achievement to be awarded. This could get expensive in some cases however. That would prompt me to spend more time in this area of the design, to keep database load manageable. Or possibly reconsider what type of database to use. Here I have worked with SQL, but I am now thinking that a NoSQL database would have certain advantages.
 * Notification of achievements awarded is touched on in the schema but there is no implementation for that here. That should be relatively straightforward given that we know what partners and employers are interested in which achievements and we know how to inform them of the achievemencts automatically through access to an application on their end (certainly better than email).
-
-# Shortcomings
 * I did not design a system in which these events and achievements could be designed by non-engineers. Each achievement has custom code that would evaluate whether the achievement should be awarded. A better system would be one in which a person in another role could interact with the Incentive application via a user interface and create achievements based on requirements from a partner or employer.
 * I also did not write Unit tests, which I do for production code. This might have been a mistake since it doesn't represent my standard practice, but I took a chance that it would be more interesting to see the project get farther along rather than prove that each piece is working completely right.
 * Without a storage layer, there were a few parts of the system that couldn't be implemented correctly. Particularly, the HealthLogAchievementEvaluator, which is responsible for figuring out whether an event should cause the HealthLogAchievement to be awarded. Hopefully my comments fill in the gap sufficiently.
