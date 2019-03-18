@@ -58,7 +58,7 @@ $result = $aws_client->receiveMessage($connection_details);
          $client->deleteMessage(['QueueUrl' => $connection_details->QueueUrl, 'ReceiptHandle' => $message['ReceiptHandle']]);
     }
  }
-</pre
+</pre>
 
 * The association between an event and the AchievementEvaluator instance that will indicate whether the event should cause the achievement to be awarded is also not in the implementation. I was a bit torn on this one - will it always be the case that a HealthLogEvent only drives toward a HealthAchievement? Probably not in the long term. The solution here could simply be to try all of the AchievementEvaluators to see if the specified Event should cause an achievement to be awarded. This could get expensive in some cases however. That would prompt me to spend more time in this area of the design, to keep database load manageable. Or possibly reconsider what type of database to use. Here I have worked with SQL, but I am now thinking that a NoSQL database would have certain advantages.
 * Notification of achievements awarded is touched on in the schema but there is no implementation for that here. That should be relatively straightforward given that we know what partners and employers are interested in which achievements and we know how to inform them of the achievemencts automatically through access to an application on their end (certainly better than email).
